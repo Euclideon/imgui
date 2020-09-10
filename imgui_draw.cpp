@@ -2952,12 +2952,22 @@ void ImFont::AddRemapChar(ImWchar dst, ImWchar src, bool overwrite_dst)
 
 const ImFontGlyph* ImFont::FindGlyph(ImWchar c) const
 {
-    if (c >= (size_t)IndexLookup.Size)
-        return FallbackGlyph;
-    const ImWchar i = IndexLookup.Data[c];
-    if (i == (ImWchar)-1)
-        return FallbackGlyph;
-    return &Glyphs.Data[i];
+    if (c < (size_t)IndexLookup.Size)
+    {
+        const ImWchar i = IndexLookup.Data[c];
+        if (i != (ImWchar)-1)
+            return &Glyphs.Data[i];
+    }
+
+    // check whether it is already registered as missing
+    for (ImWchar glyph : MissingGlyphsVector)
+    {
+        if (glyph == c)
+            return FallbackGlyph;
+    }
+    MissingGlyphsVector.push_back(c);
+
+    return FallbackGlyph;
 }
 
 const ImFontGlyph* ImFont::FindGlyphNoFallback(ImWchar c) const

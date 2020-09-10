@@ -2527,6 +2527,8 @@ struct ImFont
     int                         MetricsTotalSurface;// 4     // out //            // Total surface in pixels to get an idea of the font rasterization/texture cost (not exact, we approximate the cost of padding between glyphs)
     ImU8                        Used4kPagesMap[(IM_UNICODE_CODEPOINT_MAX+1)/4096/8]; // 2 bytes if ImWchar=ImWchar16, 34 bytes if ImWchar==ImWchar32. Store 1-bit for each block of 4K codepoints that has one active glyph. This is mainly used to facilitate iterations across all used codepoints.
 
+    mutable ImVector<ImWchar> MissingGlyphsVector;
+
     // Methods
     IMGUI_API ImFont();
     IMGUI_API ~ImFont();
@@ -2535,6 +2537,10 @@ struct ImFont
     float                       GetCharAdvance(ImWchar c) const     { return ((int)c < IndexAdvanceX.Size) ? IndexAdvanceX[(int)c] : FallbackAdvanceX; }
     bool                        IsLoaded() const                    { return ContainerAtlas != NULL; }
     const char*                 GetDebugName() const                { return ConfigData ? ConfigData->Name : "<unknown>"; }
+
+    bool                        AreGlyphsMissing() const { return MissingGlyphsVector.size() > 0; }
+    const ImVector<ImWchar>&    MissingGlyphs() const { return MissingGlyphsVector; }
+    void                        ResetMissingGlyphs() { MissingGlyphsVector.clear(); }
 
     // 'max_width' stops rendering after a certain width (could be turned into a 2d size). FLT_MAX to disable.
     // 'wrap_width' enable automatic word-wrapping across multiple lines to fit into given width. 0.0f to disable.
